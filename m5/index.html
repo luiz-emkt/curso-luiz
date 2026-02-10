@@ -38,32 +38,35 @@
 
     <main class="main">
       <div class="topbar">
-        <div class="leftTop">
-          <button class="btn icon menu" id="menuBtn" aria-label="Abrir menu">☰</button>
-          <a class="chip" id="homeLink" href="../">← Home</a>
-          <span class="chip">📚 Módulo</span>
-          <span class="chip hidden" id="homeChip">🏠 Home</span>
-          <span class="chip hidden" id="moduleChip">📚 Módulo</span>
-        </div>
+        <div class="topbarMain">
+          <div class="leftTop">
+            <button class="btn icon menu" id="menuBtn" aria-label="Abrir menu">☰</button>
+            <a class="chip" id="homeLink" href="../">← Home</a>
+          </div>
 
-        <div class="searchWrap" id="searchWrap">
-          <input class="searchInput" id="searchInput" placeholder="Buscar aula, tema, módulo…" />
-          <div class="searchResults hidden" id="searchResults"></div>
-        </div>
+          <div id="searchBar">
+            <div class="searchWrap" id="searchWrap">
+              <input class="searchInput" id="searchInput" placeholder="Buscar aula, tema, módulo…" />
+              <div class="searchResults hidden" id="searchResults"></div>
+            </div>
+          </div>
 
-        <button class="btn" id="themeBtn">☀️ Claro</button>
+          <div class="rightTop">
+            <button class="btn icon search" id="searchBtn" aria-label="Buscar">🔎</button>
+            <button class="btn" id="themeBtn">☀️ Claro</button>
+          </div>
+        </div>
       </div>
 
       <section id="moduleView">
-        <div class="card">
+        <header class="moduleHeader">
           <h1 class="title" id="modTitle">Carregando…</h1>
           <p class="desc" id="modDesc"></p>
-
           <div class="pills">
             <span class="pill" id="modMetaA">-</span>
             <span class="pill" id="modMetaB">-</span>
           </div>
-        </div>
+        </header>
 
         <div id="lessons"></div>
 
