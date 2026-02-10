@@ -1,7 +1,7 @@
 window.TRILHA_MODULES = [
   {
     id: "m1",
-    title: "Semanas 1–2 • Diagnóstico que vira decisão",
+    title: "Módulo 1: Diagnóstico que vira decisão",
     desc: "Formular problema, hipótese e critério de sucesso. Menos opinião, mais decisão.",
     lessons: [
       {
@@ -31,7 +31,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m2",
-    title: "Semanas 3–4 • Jornada real + backstage (blueprint)",
+    title: "Módulo 2: Jornada real + backstage (blueprint)",
     desc: "Mapear o que acontece de verdade. Handoffs, filas, exceções e responsabilidades.",
     lessons: [
       {
@@ -61,7 +61,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m3",
-    title: "Semanas 5–6 • Métrica aplicada e instrumentação mínima",
+    title: "Módulo 3: Métrica aplicada e instrumentação mínima",
     desc: "Escolher 2–4 métricas por etapa e provar impacto sem dashboard inútil.",
     lessons: [
       {
@@ -91,7 +91,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m4",
-    title: "Semanas 7–8 • UI utilitária + heurísticas (auditoria)",
+    title: "Módulo 4: UI utilitária + heurísticas (auditoria)",
     desc: "Clareza, consistência e prevenção de erro. Heurísticas como justificativa.",
     lessons: [
       {
@@ -124,7 +124,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m5",
-    title: "Semanas 9–10 • Pesquisa leve + teste de usabilidade",
+    title: "Módulo 5: Pesquisa leve + teste de usabilidade",
     desc: "Evidência rápida para decidir. 5 pessoas, roteiro curto, síntese em 1 página.",
     lessons: [
       {
@@ -153,7 +153,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m6",
-    title: "Semanas 11–12 • Onboarding e ativação (primeiros 7 dias)",
+    title: "Módulo 6: Onboarding e ativação (primeiros 7 dias)",
     desc: "Marcos, mensagens, gatilhos e sinais de risco para reduzir suporte e aumentar ativação.",
     lessons: [
       {
@@ -182,7 +182,7 @@ window.TRILHA_MODULES = [
   },
   {
     id: "m7",
-    title: "Bônus • Figma essencial (só o necessário)",
+    title: "Bônus: Figma essencial (só o necessário)",
     desc: "Prototipar e alinhar rápido. Componentes, estilos, auto layout e protótipo simples.",
     lessons: [
       {
