@@ -2,7 +2,7 @@
   const MODULES = window.TRILHA_MODULES || [];
   if (!MODULES.length) return;
 
-  const STATE_KEY = "trilha_luiz_state_v5";
+  const STATE_KEY = "trilha_luiz_state_v6";
   const THEME_KEY = "trilha_luiz_theme_v1";
   const BASE = window.PAGE_BASE || "./";
 
@@ -140,6 +140,39 @@
     );
   }
 
+  function renderLessonBody(lesson) {
+    let html = "";
+
+    if (lesson.sections && Array.isArray(lesson.sections) && lesson.sections.length) {
+      lesson.sections.forEach((s) => {
+        if (s.title) html += `<h4>${escapeHtml(s.title)}</h4>`;
+
+        if (s.text) html += `<p>${escapeHtml(s.text)}</p>`;
+
+        if (s.quote) html += `<blockquote>${escapeHtml(s.quote)}</blockquote>`;
+
+        if (s.bullets && Array.isArray(s.bullets) && s.bullets.length) {
+          html += `<ul>${s.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>`;
+        }
+      });
+    } else if (lesson.note) {
+      html += `<p>${escapeHtml(lesson.note)}</p>`;
+    }
+
+    if (lesson.links && lesson.links.length) {
+      html += `<h4>Links</h4>`;
+      html += `<div class="links">${
+        lesson.links.map(
+          (l) => `<a class="link" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`
+        ).join("")
+      }</div>`;
+    } else {
+      html += `<div class="muted" style="margin-top:10px;">Sem links aqui: é entrega/prática.</div>`;
+    }
+
+    return html;
+  }
+
   function renderModule(moduleId, opts = {}) {
     activeModuleId = moduleId;
 
@@ -169,26 +202,15 @@
 
       const checked = !!state[lesson.id];
 
-      const linksHtml =
-        lesson.links && lesson.links.length
-          ? `<div class="links">${
-              lesson.links
-                .map(
-                  (l) =>
-                    `<a class="link" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`
-                )
-                .join("")
-            }</div>`
-          : `<div class="muted" style="margin-top:8px;">Sem link aqui: é entrega/prática.</div>`;
-
       wrap.innerHTML = `
         <div class="lessonTop">
           <input type="checkbox" ${checked ? "checked" : ""} aria-label="Concluir aula" />
           <div style="flex:1;">
             <h3>${escapeHtml(lesson.title)}</h3>
-            <p>${escapeHtml(lesson.note || "")}</p>
-            ${linksHtml}
           </div>
+        </div>
+        <div class="lessonBody">
+          ${renderLessonBody(lesson)}
         </div>
       `;
 
@@ -200,6 +222,7 @@
       wrap.addEventListener("click", (e) => {
         if (e.target.closest("a")) return;
         if (e.target.closest("input")) return;
+        if (wrap.classList.contains("active")) return; // evita scroll chato ao tocar dentro do aberto
         setActiveLesson(lesson.id);
       });
 
@@ -300,19 +323,22 @@
     return m ? m.lessons.find((l) => l.id === lessonId) : null;
   }
 
-  /* Search */
+  // Search
   const searchIndex = buildSearchIndex();
 
   function buildSearchIndex() {
     const items = [];
     MODULES.forEach((mod) => {
       mod.lessons.forEach((lesson) => {
+        const extra = lesson.sections
+          ? lesson.sections.map(s => `${s.title || ""} ${s.text || ""} ${(s.bullets || []).join(" ")} ${s.quote || ""}`).join(" ")
+          : (lesson.note || "");
         items.push({
           moduleId: mod.id,
           moduleTitle: mod.title,
           lessonId: lesson.id,
           lessonTitle: lesson.title,
-          hay: `${mod.title} ${lesson.title} ${lesson.note || ""}`.toLowerCase(),
+          hay: `${mod.title} ${lesson.title} ${extra}`.toLowerCase(),
         });
       });
     });
@@ -398,9 +424,7 @@
     });
 
     document.addEventListener("click", (e) => {
-      // Fecha dropdown de resultados se clicar fora
       if (!wrap.contains(e.target)) hideResults();
-      // No mobile, se search estiver aberto e clicar fora do search (e não no botão lupa), fecha
       if (isMobile() && document.body.classList.contains("search-open")) {
         const sb = $("searchBar");
         const btn = $("searchBtn");
@@ -409,7 +433,7 @@
     });
   }
 
-  /* Theme */
+  // Theme
   function initTheme() {
     const saved = localStorage.getItem(THEME_KEY);
     const theme = saved === "light" || saved === "dark" ? saved : "dark";
