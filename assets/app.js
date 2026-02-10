@@ -124,10 +124,11 @@
     const continueBtn = $("continueBtn");
     if (continueBtn) {
       continueBtn.onclick = () => {
-        const next = findNextAcrossAll();
-        if (!next) return;
-        window.location.href = `${BASE}${next.moduleId}/#${next.lessonId}`;
-      };
+  const next = findNextAcrossAll();
+  if (!next) return;
+  // Sem hash: abre no topo do módulo e o módulo abre a primeira pendente sem scroll
+  window.location.href = `${BASE}${next.moduleId}/`;
+};
     }
 
     const next = findNextAcrossAll();
