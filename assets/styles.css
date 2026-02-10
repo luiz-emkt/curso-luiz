@@ -2,37 +2,56 @@
   --radius-lg: 18px;
   --radius-md: 14px;
   --radius-sm: 12px;
-  --shadow: 0 10px 30px rgba(0,0,0,.18);
-  --ring: 0 0 0 3px rgba(110,231,255,.14);
+
+  /* ajustes finos */
+  --shadow: 0 16px 40px rgba(0,0,0,.35);
+  --ring: 0 0 0 3px rgba(16,163,127,.22);
 }
 
+/* Dark inspirado em UI do ChatGPT: cinzas escuros, sem neon */
 html[data-theme="dark"] {
-  --bg: #0b0c10;
-  --panel: #111318;
-  --panel2: #0f1116;
-  --text: #e9eef7;
-  --muted: #a7b0c0;
-  --line: #222633;
-  --accent: #6ee7ff;
-  --chip: #0b0c10;
-  --chipText: #e9eef7;
-  --btn: #0b0c10;
+  --bg: #0f0f10;
+  --panel: #171717;
+  --panel2: #1f1f1f;
+
+  --text: #e7e7e8;
+  --muted: #a1a1aa;
+
+  --line: #2a2a2e;
+  --lineHover: #3a3a40;
+
+  --accent: #10a37f;
+
+  --chip: #1f1f1f;
+  --chipText: #e7e7e8;
+
+  --btn: #1f1f1f;
+  --btnHover: #262626;
 }
 
+/* Light simples */
 html[data-theme="light"] {
   --bg: #f6f7fb;
   --panel: #ffffff;
   --panel2: #f4f6fb;
+
   --text: #0e1220;
   --muted: #58627a;
+
   --line: #e5e8f0;
+  --lineHover: #cfd6e6;
+
   --accent: #006dff;
+
   --chip: #f0f3fa;
   --chipText: #0e1220;
+
   --btn: #ffffff;
+  --btnHover: #f2f5fb;
 }
 
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -41,9 +60,9 @@ body {
 }
 
 a { color: var(--accent); text-decoration: none; }
-
 .hidden { display: none !important; }
 
+/* Layout */
 .app {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -67,9 +86,10 @@ a { color: var(--accent); text-decoration: none; }
   margin-bottom: 14px;
 }
 .dot {
-  width: 10px; height: 10px; border-radius: 999px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 14px rgba(110,231,255,.35);
 }
 .h1 { font-weight: 800; font-size: 14px; letter-spacing: .2px; }
 .sub { color: var(--muted); font-size: 12px; margin-top: 2px; line-height: 1.4; }
@@ -110,10 +130,10 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: var(--radius-sm);
   transition: .15s;
 }
-.nav a:hover { border-color: color-mix(in oklab, var(--line), var(--text) 15%); }
+.nav a:hover { border-color: var(--lineHover); }
 .nav a.active {
-  border-color: color-mix(in oklab, var(--accent), var(--line) 35%);
-  box-shadow: var(--ring);
+  border-color: rgba(16,163,127,.7);
+  background: var(--panel);
 }
 .nav .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
@@ -123,6 +143,7 @@ a { color: var(--accent); text-decoration: none; }
   flex-wrap: wrap;
   margin-top: 14px;
 }
+
 .btn {
   border: 1px solid var(--line);
   background: var(--btn);
@@ -131,14 +152,22 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
-.btn:hover { border-color: color-mix(in oklab, var(--line), var(--text) 18%); }
+.btn:hover { border-color: var(--lineHover); background: var(--btnHover); }
+
 .btn.primary {
-  border-color: color-mix(in oklab, var(--accent), var(--line) 35%);
-  background: color-mix(in oklab, var(--accent), var(--btn) 86%);
+  border-color: rgba(16,163,127,.7);
+  background: rgba(16,163,127,.12);
+}
+.btn.primary:hover {
+  background: rgba(16,163,127,.18);
 }
 
-.muted { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.btn.icon {
+  padding: 10px 12px;
+  line-height: 1;
+}
 
+/* Conteúdo */
 .main {
   padding: 22px;
   max-width: 980px;
@@ -172,10 +201,7 @@ a { color: var(--accent); text-decoration: none; }
   font-size: 13px;
 }
 
-.searchWrap {
-  position: relative;
-  width: min(520px, 100%);
-}
+.searchWrap { position: relative; width: min(520px, 100%); }
 .searchInput {
   width: 100%;
   padding: 10px 12px;
@@ -186,7 +212,7 @@ a { color: var(--accent); text-decoration: none; }
   outline: none;
 }
 .searchInput:focus {
-  border-color: color-mix(in oklab, var(--accent), var(--line) 35%);
+  border-color: rgba(16,163,127,.7);
   box-shadow: var(--ring);
 }
 
@@ -212,7 +238,7 @@ a { color: var(--accent); text-decoration: none; }
   color: var(--text);
 }
 .searchResults a:first-child { border-top: 0; }
-.searchResults a:hover { background: color-mix(in oklab, var(--panel2), var(--panel) 30%); }
+.searchResults a:hover { background: var(--panel2); }
 .searchResults .small { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
 .card {
@@ -246,12 +272,14 @@ a { color: var(--accent); text-decoration: none; }
   scroll-margin-top: 110px;
 }
 .lesson.active {
-  border-color: color-mix(in oklab, var(--accent), var(--line) 35%);
+  border-color: rgba(16,163,127,.7);
   box-shadow: var(--ring);
 }
 .lessonTop { display:flex; gap: 10px; align-items:flex-start; }
 .lesson input[type="checkbox"] {
-  width: 18px; height: 18px; margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
   accent-color: var(--accent);
   cursor: pointer;
 }
@@ -287,11 +315,49 @@ a { color: var(--accent); text-decoration: none; }
   margin-top: 16px;
 }
 
+/* Overlay do menu mobile */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: .2s;
+  z-index: 90;
+}
+body.menu-open .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile: sidebar vira drawer com hamburger */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
-  .sidebar { position: relative; height: auto; }
-  .topbar { flex-direction: column; align-items: stretch; }
-  .searchWrap { width: 100%; }
+  .main { padding: 18px; }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 86vw;
+    max-width: 340px;
+    transform: translateX(-110%);
+    transition: transform .2s ease;
+    z-index: 100;
+    border-right: 1px solid var(--line);
+  }
+
+  body.menu-open .sidebar { transform: translateX(0); }
+
+  /* botão menu aparece só no mobile */
+  .btn.icon.menu { display: inline-flex; }
   .bottomActions { justify-content: stretch; }
   .bottomActions .btn { width: 100%; }
+}
+
+/* Desktop: esconde o botão menu */
+@media (min-width: 901px) {
+  .btn.icon.menu { display: none; }
 }
