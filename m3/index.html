@@ -24,9 +24,7 @@
           <div class="pct" id="pctTotal">0%</div>
         </div>
         <div class="bar"><span id="barTotal"></span></div>
-        <div class="muted" style="margin-top:10px;">
-          Progresso salvo neste navegador.
-        </div>
+        <div class="muted" style="margin-top:10px;">Progresso salvo neste navegador.</div>
       </div>
 
       <div class="nav" id="nav"></div>
@@ -36,11 +34,16 @@
       </div>
     </aside>
 
+    <div class="overlay" id="overlay"></div>
+
     <main class="main">
       <div class="topbar">
         <div class="leftTop">
+          <button class="btn icon menu" id="menuBtn" aria-label="Abrir menu">☰</button>
           <a class="chip" id="homeLink" href="../">← Home</a>
           <span class="chip">📚 Módulo</span>
+          <span class="chip hidden" id="homeChip">🏠 Home</span>
+          <span class="chip hidden" id="moduleChip">📚 Módulo</span>
         </div>
 
         <div class="searchWrap" id="searchWrap">
