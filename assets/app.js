@@ -2,56 +2,33 @@
   const MODULES = window.TRILHA_MODULES || [];
   if (!MODULES.length) return;
 
-  const STATE_KEY = "trilha_luiz_state_v3";
+  const STATE_KEY = "trilha_luiz_state_v4";
   const THEME_KEY = "trilha_luiz_theme_v1";
   const BASE = window.PAGE_BASE || "./"; // home: "./" | module pages: "../"
 
   const $ = (id) => document.getElementById(id);
 
-  function show(id) {
-    const el = $(id);
-    if (el) el.classList.remove("hidden");
-  }
-
-  function hide(id) {
-    const el = $(id);
-    if (el) el.classList.add("hidden");
-  }
-
-  function setText(id, text) {
-    const el = $(id);
-    if (el) el.textContent = text;
-  }
-
-  function setHref(id, href) {
-    const el = $(id);
-    if (el) el.href = href;
-  }
+  function show(id) { const el = $(id); if (el) el.classList.remove("hidden"); }
+  function hide(id) { const el = $(id); if (el) el.classList.add("hidden"); }
+  function setText(id, text) { const el = $(id); if (el) el.textContent = text; }
+  function setHref(id, href) { const el = $(id); if (el) el.href = href; }
 
   let state = loadState();
   let activeModuleId = document.body?.dataset?.module || MODULES[0].id;
 
-  // Theme
   initTheme();
-
-  // Common wiring
   wireCommon();
 
-  // Sidebar + total progress
   renderNav();
   renderTotalProgress();
 
-  // Page routing
   const page = document.body?.dataset?.page;
   if (page === "home") renderHome();
   if (page === "module") renderModule(activeModuleId);
 
   function loadState() {
-    try {
-      return JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
-    } catch {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
+    catch { return {}; }
   }
 
   function saveState() {
@@ -89,6 +66,11 @@
     if (bar) bar.style.width = `${p.pct}%`;
   }
 
+  function openMenu() { document.body.classList.add("menu-open"); }
+  function closeMenu() { document.body.classList.remove("menu-open"); }
+  function toggleMenu() { document.body.classList.toggle("menu-open"); }
+  function isMobile() { return window.matchMedia && window.matchMedia("(max-width: 900px)").matches; }
+
   function renderNav() {
     const nav = $("nav");
     if (!nav) return;
@@ -98,6 +80,7 @@
 
     MODULES.forEach((mod) => {
       const prog = calcModuleProgress(mod);
+
       const a = document.createElement("a");
       a.href = `${BASE}${mod.id}/`;
       a.className = current === mod.id ? "active" : "";
@@ -105,6 +88,11 @@
         <div style="font-weight:800; font-size:13px;">${escapeHtml(mod.title)}</div>
         <div class="meta">${prog.done}/${prog.total} concluídas • ${prog.pct}%</div>
       `;
+
+      a.addEventListener("click", () => {
+        if (isMobile()) closeMenu();
+      });
+
       nav.appendChild(a);
     });
   }
@@ -113,11 +101,9 @@
     show("homeView");
     hide("moduleView");
 
-    // Esses chips só existem na home. No módulo, não.
     show("homeChip");
     hide("moduleChip");
 
-    // Continue button
     const continueBtn = $("continueBtn");
     if (continueBtn) {
       continueBtn.onclick = () => {
@@ -127,7 +113,6 @@
       };
     }
 
-    // Home summary
     const next = findNextAcrossAll();
     setText(
       "nextUp",
@@ -143,7 +128,6 @@
     hide("homeView");
     show("moduleView");
 
-    // Esses chips só existem na home. No módulo, não.
     hide("homeChip");
     show("moduleChip");
 
@@ -157,7 +141,6 @@
     setText("modMetaA", `${prog.done}/${prog.total} concluídas`);
     setText("modMetaB", `${prog.pct}% do módulo`);
 
-    // Render lessons
     const lessonsWrap = $("lessons");
     if (!lessonsWrap) return;
 
@@ -194,35 +177,22 @@
         </div>
       `;
 
-      // Checkbox
       const cb = wrap.querySelector("input");
-      if (cb) {
-        cb.addEventListener("change", (e) => {
-          setChecked(lesson.id, e.target.checked);
-        });
-      }
+      if (cb) cb.addEventListener("change", (e) => setChecked(lesson.id, e.target.checked));
 
-      // Click title: set hash + highlight
       const title = wrap.querySelector("[data-lesson-title]");
-      if (title) {
-        title.addEventListener("click", () => {
-          setActiveLesson(lesson.id);
-        });
-      }
+      if (title) title.addEventListener("click", () => setActiveLesson(lesson.id));
 
       lessonsWrap.appendChild(wrap);
     });
 
     if (opts.keepScroll) lessonsWrap.scrollTop = prevScroll;
 
-    // Home link (só existe no módulo)
     setHref("homeLink", `${BASE}`);
 
-    // Next button
     const nextBtn = $("nextBtn");
     if (nextBtn) nextBtn.onclick = () => goNextLesson();
 
-    // Apply hash highlight
     const hash = (location.hash || "").replace("#", "");
     if (hash && getLesson(moduleId, hash)) {
       setActiveLesson(hash, { scroll: true, silentHash: true });
@@ -231,7 +201,6 @@
       if (firstPending) setActiveLesson(firstPending.id, { scroll: false, silentHash: false });
     }
 
-    // Update nav active state
     renderNav();
   }
 
@@ -245,7 +214,6 @@
     el.classList.add("active");
 
     if (!silentHash) history.replaceState(null, "", `#${lessonId}`);
-
     if (scroll) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -266,7 +234,6 @@
       return;
     }
 
-    // all done
     window.location.href = `${BASE}`;
   }
 
@@ -283,33 +250,28 @@
     const mod = getModule(moduleId);
     if (!mod) return { type: "none" };
 
-    // start after current hash if possible
     let startIdx = 0;
     if (fromLessonId) {
       const idx = mod.lessons.findIndex((l) => l.id === fromLessonId);
       if (idx >= 0) startIdx = idx + 1;
     }
 
-    // 1) next pending after current
     for (let i = startIdx; i < mod.lessons.length; i++) {
       const l = mod.lessons[i];
       if (!state[l.id]) return { type: "lesson", moduleId, lessonId: l.id };
     }
 
-    // 2) pending from start (in case current is later)
     for (let i = 0; i < mod.lessons.length; i++) {
       const l = mod.lessons[i];
       if (!state[l.id]) return { type: "lesson", moduleId, lessonId: l.id };
     }
 
-    // 3) next module that has pending
     const currentIndex = MODULES.findIndex((m) => m.id === moduleId);
     for (let j = currentIndex + 1; j < MODULES.length; j++) {
       const m = MODULES[j];
       if (m.lessons.some((l) => !state[l.id])) return { type: "module", moduleId: m.id };
     }
 
-    // 4) fallback: next module in order
     if (currentIndex >= 0 && currentIndex + 1 < MODULES.length) {
       return { type: "module", moduleId: MODULES[currentIndex + 1].id };
     }
@@ -317,16 +279,13 @@
     return { type: "none" };
   }
 
-  function getModule(id) {
-    return MODULES.find((m) => m.id === id);
-  }
-
+  function getModule(id) { return MODULES.find((m) => m.id === id); }
   function getLesson(moduleId, lessonId) {
     const m = getModule(moduleId);
     return m ? m.lessons.find((l) => l.id === lessonId) : null;
   }
 
-  // Search
+  /* Search */
   const searchIndex = buildSearchIndex();
 
   function buildSearchIndex() {
@@ -346,11 +305,9 @@
   }
 
   function wireCommon() {
-    // Theme toggle
     const themeBtn = $("themeBtn");
     if (themeBtn) themeBtn.onclick = () => toggleTheme();
 
-    // Reset
     const resetBtn = $("resetBtn");
     if (resetBtn) {
       resetBtn.onclick = () => {
@@ -361,35 +318,40 @@
       };
     }
 
-    // Search
+    const menuBtn = $("menuBtn");
+    if (menuBtn) menuBtn.addEventListener("click", () => toggleMenu());
+
+    const overlay = $("overlay");
+    if (overlay) overlay.addEventListener("click", () => closeMenu());
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!isMobile()) closeMenu();
+    });
+
     const input = $("searchInput");
     const results = $("searchResults");
     const wrap = $("searchWrap");
-
     if (!input || !results || !wrap) return;
 
     const hideResults = () => results.classList.add("hidden");
 
     input.addEventListener("input", () => {
       const q = input.value.trim().toLowerCase();
-      if (q.length < 2) {
-        hideResults();
-        return;
-      }
+      if (q.length < 2) { hideResults(); return; }
 
       const matches = searchIndex.filter((x) => x.hay.includes(q)).slice(0, 12);
 
       results.innerHTML = matches.length
-        ? matches
-            .map(
-              (m) => `
-                <a href="${BASE}${m.moduleId}/#${m.lessonId}">
-                  <div style="font-weight:800; font-size:13px;">${escapeHtml(m.lessonTitle)}</div>
-                  <div class="small">${escapeHtml(m.moduleTitle)}</div>
-                </a>
-              `
-            )
-            .join("")
+        ? matches.map((m) => `
+            <a href="${BASE}${m.moduleId}/#${m.lessonId}">
+              <div style="font-weight:800; font-size:13px;">${escapeHtml(m.lessonTitle)}</div>
+              <div class="small">${escapeHtml(m.moduleTitle)}</div>
+            </a>
+          `).join("")
         : `<div style="padding:10px 12px; color: var(--muted);">Nenhum resultado.</div>`;
 
       results.classList.remove("hidden");
@@ -408,7 +370,7 @@
     });
   }
 
-  // Theme helpers
+  /* Theme */
   function initTheme() {
     const saved = localStorage.getItem(THEME_KEY);
     const theme = saved === "light" || saved === "dark" ? saved : "dark";
