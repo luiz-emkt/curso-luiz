@@ -8,8 +8,28 @@
 
   const $ = (id) => document.getElementById(id);
 
+  function show(id) {
+    const el = $(id);
+    if (el) el.classList.remove("hidden");
+  }
+
+  function hide(id) {
+    const el = $(id);
+    if (el) el.classList.add("hidden");
+  }
+
+  function setText(id, text) {
+    const el = $(id);
+    if (el) el.textContent = text;
+  }
+
+  function setHref(id, href) {
+    const el = $(id);
+    if (el) el.href = href;
+  }
+
   let state = loadState();
-  let activeModuleId = document.body.dataset.module || MODULES[0].id;
+  let activeModuleId = document.body?.dataset?.module || MODULES[0].id;
 
   // Theme
   initTheme();
@@ -22,19 +42,24 @@
   renderTotalProgress();
 
   // Page routing
-  const page = document.body.dataset.page;
+  const page = document.body?.dataset?.page;
   if (page === "home") renderHome();
   if (page === "module") renderModule(activeModuleId);
 
   function loadState() {
-    try { return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
-    catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+    } catch {
+      return {};
+    }
   }
+
   function saveState() {
     localStorage.setItem(STATE_KEY, JSON.stringify(state));
     renderNav();
     renderTotalProgress();
-    if (document.body.dataset.page === "module") renderModule(activeModuleId, { keepScroll: true });
+    if (document.body?.dataset?.page === "home") renderHome();
+    if (document.body?.dataset?.page === "module") renderModule(activeModuleId, { keepScroll: true });
   }
 
   function setChecked(lessonId, checked) {
@@ -44,32 +69,34 @@
 
   function calcModuleProgress(mod) {
     const total = mod.lessons.length;
-    const done = mod.lessons.filter(l => !!state[l.id]).length;
+    const done = mod.lessons.filter((l) => !!state[l.id]).length;
     const pct = total ? Math.round((done / total) * 100) : 0;
     return { done, total, pct };
   }
 
   function calcTotalProgress() {
-    const all = MODULES.flatMap(m => m.lessons.map(l => l.id));
+    const all = MODULES.flatMap((m) => m.lessons.map((l) => l.id));
     const total = all.length;
-    const done = all.filter(id => !!state[id]).length;
+    const done = all.filter((id) => !!state[id]).length;
     const pct = total ? Math.round((done / total) * 100) : 0;
     return { done, total, pct };
   }
 
   function renderTotalProgress() {
     const p = calcTotalProgress();
-    $("pctTotal").textContent = `${p.pct}%`;
-    $("barTotal").style.width = `${p.pct}%`;
+    setText("pctTotal", `${p.pct}%`);
+    const bar = $("barTotal");
+    if (bar) bar.style.width = `${p.pct}%`;
   }
 
   function renderNav() {
     const nav = $("nav");
+    if (!nav) return;
     nav.innerHTML = "";
 
-    const current = document.body.dataset.page === "module" ? activeModuleId : null;
+    const current = document.body?.dataset?.page === "module" ? activeModuleId : null;
 
-    MODULES.forEach(mod => {
+    MODULES.forEach((mod) => {
       const prog = calcModuleProgress(mod);
       const a = document.createElement("a");
       a.href = `${BASE}${mod.id}/`;
@@ -83,63 +110,78 @@
   }
 
   function renderHome() {
-    $("homeView").classList.remove("hidden");
-    $("moduleView").classList.add("hidden");
-    $("homeChip").classList.remove("hidden");
-    $("moduleChip").classList.add("hidden");
+    show("homeView");
+    hide("moduleView");
+
+    // Esses chips só existem na home. No módulo, não.
+    show("homeChip");
+    hide("moduleChip");
 
     // Continue button
-    $("continueBtn").onclick = () => {
-      const next = findNextAcrossAll();
-      if (!next) return;
-      window.location.href = `${BASE}${next.moduleId}/#${next.lessonId}`;
-    };
+    const continueBtn = $("continueBtn");
+    if (continueBtn) {
+      continueBtn.onclick = () => {
+        const next = findNextAcrossAll();
+        if (!next) return;
+        window.location.href = `${BASE}${next.moduleId}/#${next.lessonId}`;
+      };
+    }
 
     // Home summary
     const next = findNextAcrossAll();
-    $("nextUp").textContent = next
-      ? `${getModule(next.moduleId).title} • ${getLesson(next.moduleId, next.lessonId).title}`
-      : "Tudo concluído. Hora de aplicar em projeto real 😄";
+    setText(
+      "nextUp",
+      next
+        ? `${getModule(next.moduleId).title} • ${getLesson(next.moduleId, next.lessonId).title}`
+        : "Tudo concluído. Hora de aplicar em projeto real 😄"
+    );
   }
 
   function renderModule(moduleId, opts = {}) {
     activeModuleId = moduleId;
 
-    $("homeView").classList.add("hidden");
-    $("moduleView").classList.remove("hidden");
-    $("homeChip").classList.add("hidden");
-    $("moduleChip").classList.remove("hidden");
+    hide("homeView");
+    show("moduleView");
+
+    // Esses chips só existem na home. No módulo, não.
+    hide("homeChip");
+    show("moduleChip");
 
     const mod = getModule(moduleId);
     if (!mod) return;
 
     const prog = calcModuleProgress(mod);
 
-    $("modTitle").textContent = mod.title;
-    $("modDesc").textContent = mod.desc;
-    $("modMetaA").textContent = `${prog.done}/${prog.total} concluídas`;
-    $("modMetaB").textContent = `${prog.pct}% do módulo`;
+    setText("modTitle", mod.title);
+    setText("modDesc", mod.desc);
+    setText("modMetaA", `${prog.done}/${prog.total} concluídas`);
+    setText("modMetaB", `${prog.pct}% do módulo`);
 
     // Render lessons
     const lessonsWrap = $("lessons");
-    const prevScroll = opts.keepScroll ? lessonsWrap.scrollTop : 0;
+    if (!lessonsWrap) return;
 
+    const prevScroll = opts.keepScroll ? lessonsWrap.scrollTop : 0;
     lessonsWrap.innerHTML = "";
 
-    mod.lessons.forEach(lesson => {
+    mod.lessons.forEach((lesson) => {
       const wrap = document.createElement("div");
       wrap.className = "lesson";
       wrap.id = lesson.id;
 
       const checked = !!state[lesson.id];
 
-      const linksHtml = (lesson.links && lesson.links.length)
-        ? `<div class="links">${
-            lesson.links.map(l =>
-              `<a class="link" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`
-            ).join("")
-          }</div>`
-        : `<div class="muted" style="margin-top:8px;">Sem link aqui: é entrega/prática.</div>`;
+      const linksHtml =
+        lesson.links && lesson.links.length
+          ? `<div class="links">${
+              lesson.links
+                .map(
+                  (l) =>
+                    `<a class="link" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`
+                )
+                .join("")
+            }</div>`
+          : `<div class="muted" style="margin-top:8px;">Sem link aqui: é entrega/prática.</div>`;
 
       wrap.innerHTML = `
         <div class="lessonTop">
@@ -153,33 +195,39 @@
       `;
 
       // Checkbox
-      wrap.querySelector("input").addEventListener("change", (e) => {
-        setChecked(lesson.id, e.target.checked);
-      });
+      const cb = wrap.querySelector("input");
+      if (cb) {
+        cb.addEventListener("change", (e) => {
+          setChecked(lesson.id, e.target.checked);
+        });
+      }
 
       // Click title: set hash + highlight
-      wrap.querySelector("[data-lesson-title]").addEventListener("click", () => {
-        setActiveLesson(lesson.id);
-      });
+      const title = wrap.querySelector("[data-lesson-title]");
+      if (title) {
+        title.addEventListener("click", () => {
+          setActiveLesson(lesson.id);
+        });
+      }
 
       lessonsWrap.appendChild(wrap);
     });
 
     if (opts.keepScroll) lessonsWrap.scrollTop = prevScroll;
 
-    // Home link
-    $("homeLink").href = `${BASE}`;
+    // Home link (só existe no módulo)
+    setHref("homeLink", `${BASE}`);
 
     // Next button
-    $("nextBtn").onclick = () => goNextLesson();
+    const nextBtn = $("nextBtn");
+    if (nextBtn) nextBtn.onclick = () => goNextLesson();
 
     // Apply hash highlight
     const hash = (location.hash || "").replace("#", "");
     if (hash && getLesson(moduleId, hash)) {
       setActiveLesson(hash, { scroll: true, silentHash: true });
     } else {
-      // highlight first pending
-      const firstPending = mod.lessons.find(l => !state[l.id]);
+      const firstPending = mod.lessons.find((l) => !state[l.id]);
       if (firstPending) setActiveLesson(firstPending.id, { scroll: false, silentHash: false });
     }
 
@@ -190,7 +238,7 @@
   function setActiveLesson(lessonId, options = {}) {
     const { scroll = true, silentHash = false } = options;
 
-    document.querySelectorAll(".lesson.active").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".lesson.active").forEach((el) => el.classList.remove("active"));
     const el = document.getElementById(lessonId);
     if (!el) return;
 
@@ -238,7 +286,7 @@
     // start after current hash if possible
     let startIdx = 0;
     if (fromLessonId) {
-      const idx = mod.lessons.findIndex(l => l.id === fromLessonId);
+      const idx = mod.lessons.findIndex((l) => l.id === fromLessonId);
       if (idx >= 0) startIdx = idx + 1;
     }
 
@@ -255,10 +303,10 @@
     }
 
     // 3) next module that has pending
-    const currentIndex = MODULES.findIndex(m => m.id === moduleId);
+    const currentIndex = MODULES.findIndex((m) => m.id === moduleId);
     for (let j = currentIndex + 1; j < MODULES.length; j++) {
       const m = MODULES[j];
-      if (m.lessons.some(l => !state[l.id])) return { type: "module", moduleId: m.id };
+      if (m.lessons.some((l) => !state[l.id])) return { type: "module", moduleId: m.id };
     }
 
     // 4) fallback: next module in order
@@ -269,10 +317,13 @@
     return { type: "none" };
   }
 
-  function getModule(id) { return MODULES.find(m => m.id === id); }
+  function getModule(id) {
+    return MODULES.find((m) => m.id === id);
+  }
+
   function getLesson(moduleId, lessonId) {
     const m = getModule(moduleId);
-    return m ? m.lessons.find(l => l.id === lessonId) : null;
+    return m ? m.lessons.find((l) => l.id === lessonId) : null;
   }
 
   // Search
@@ -280,14 +331,14 @@
 
   function buildSearchIndex() {
     const items = [];
-    MODULES.forEach(mod => {
-      mod.lessons.forEach(lesson => {
+    MODULES.forEach((mod) => {
+      mod.lessons.forEach((lesson) => {
         items.push({
           moduleId: mod.id,
           moduleTitle: mod.title,
           lessonId: lesson.id,
           lessonTitle: lesson.title,
-          hay: `${mod.title} ${lesson.title} ${lesson.note || ""}`.toLowerCase()
+          hay: `${mod.title} ${lesson.title} ${lesson.note || ""}`.toLowerCase(),
         });
       });
     });
@@ -296,39 +347,49 @@
 
   function wireCommon() {
     // Theme toggle
-    $("themeBtn").onclick = () => toggleTheme();
+    const themeBtn = $("themeBtn");
+    if (themeBtn) themeBtn.onclick = () => toggleTheme();
 
     // Reset
-    $("resetBtn").onclick = () => {
-      const ok = confirm("Resetar todo o progresso neste navegador?");
-      if (!ok) return;
-      state = {};
-      saveState();
-      if (document.body.dataset.page === "home") renderHome();
-      if (document.body.dataset.page === "module") renderModule(activeModuleId);
-    };
+    const resetBtn = $("resetBtn");
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        const ok = confirm("Resetar todo o progresso neste navegador?");
+        if (!ok) return;
+        state = {};
+        saveState();
+      };
+    }
 
     // Search
     const input = $("searchInput");
     const results = $("searchResults");
+    const wrap = $("searchWrap");
+
+    if (!input || !results || !wrap) return;
 
     const hideResults = () => results.classList.add("hidden");
 
     input.addEventListener("input", () => {
       const q = input.value.trim().toLowerCase();
-      if (q.length < 2) { hideResults(); return; }
+      if (q.length < 2) {
+        hideResults();
+        return;
+      }
 
-      const matches = searchIndex
-        .filter(x => x.hay.includes(q))
-        .slice(0, 12);
+      const matches = searchIndex.filter((x) => x.hay.includes(q)).slice(0, 12);
 
       results.innerHTML = matches.length
-        ? matches.map(m => `
-            <a href="${BASE}${m.moduleId}/#${m.lessonId}">
-              <div style="font-weight:800; font-size:13px;">${escapeHtml(m.lessonTitle)}</div>
-              <div class="small">${escapeHtml(m.moduleTitle)}</div>
-            </a>
-          `).join("")
+        ? matches
+            .map(
+              (m) => `
+                <a href="${BASE}${m.moduleId}/#${m.lessonId}">
+                  <div style="font-weight:800; font-size:13px;">${escapeHtml(m.lessonTitle)}</div>
+                  <div class="small">${escapeHtml(m.moduleTitle)}</div>
+                </a>
+              `
+            )
+            .join("")
         : `<div style="padding:10px 12px; color: var(--muted);">Nenhum resultado.</div>`;
 
       results.classList.remove("hidden");
@@ -343,7 +404,6 @@
     });
 
     document.addEventListener("click", (e) => {
-      const wrap = $("searchWrap");
       if (!wrap.contains(e.target)) hideResults();
     });
   }
@@ -364,12 +424,17 @@
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
-    $("themeBtn").textContent = theme === "dark" ? "☀️ Claro" : "🌙 Escuro";
+    const themeBtn = $("themeBtn");
+    if (themeBtn) themeBtn.textContent = theme === "dark" ? "☀️ Claro" : "🌙 Escuro";
   }
 
   function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, s => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    return String(str).replace(/[&<>"']/g, (s) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
     }[s]));
   }
 })();
