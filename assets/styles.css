@@ -390,3 +390,48 @@ body.menu-open .overlay {
   .btn.icon.search { display: none; }
   #searchBar { display: block; }
 }
+
+/* Conteúdo interno das aulas */
+.lessonBody {
+  margin-top: 10px;
+  padding-left: 28px; /* alinha com o texto depois do checkbox */
+}
+
+.lessonBody h4 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.lessonBody p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lessonBody ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lessonBody li { margin: 4px 0; }
+
+.lessonBody blockquote {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Mobile: só a aula ativa fica aberta */
+@media (max-width: 900px) {
+  .lessonBody { display: none; }
+  .lesson.active .lessonBody { display: block; }
+}
