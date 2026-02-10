@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Trilha Luiz | Experiência ponta a ponta com Operação</title>
+  <title>Trilha Luiz</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <script>window.PAGE_BASE = "./";</script>
 </head>
@@ -38,18 +38,24 @@
 
     <main class="main">
       <div class="topbar">
-        <div class="leftTop">
-          <button class="btn icon menu" id="menuBtn" aria-label="Abrir menu">☰</button>
-          <span class="chip hidden" id="homeChip">🏠 Home</span>
-          <span class="chip hidden" id="moduleChip">📚 Módulo</span>
-        </div>
+        <div class="topbarMain">
+          <div class="leftTop">
+            <button class="btn icon menu" id="menuBtn" aria-label="Abrir menu">☰</button>
+            <span class="chip">🏠 Home</span>
+          </div>
 
-        <div class="searchWrap" id="searchWrap">
-          <input class="searchInput" id="searchInput" placeholder="Buscar aula, tema, módulo…" />
-          <div class="searchResults hidden" id="searchResults"></div>
-        </div>
+          <div id="searchBar">
+            <div class="searchWrap" id="searchWrap">
+              <input class="searchInput" id="searchInput" placeholder="Buscar aula, tema, módulo…" />
+              <div class="searchResults hidden" id="searchResults"></div>
+            </div>
+          </div>
 
-        <button class="btn" id="themeBtn">☀️ Claro</button>
+          <div class="rightTop">
+            <button class="btn icon search" id="searchBtn" aria-label="Buscar">🔎</button>
+            <button class="btn" id="themeBtn">☀️ Claro</button>
+          </div>
+        </div>
       </div>
 
       <section id="homeView">
