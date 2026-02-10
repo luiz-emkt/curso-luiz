@@ -3,12 +3,11 @@
   --radius-md: 14px;
   --radius-sm: 12px;
 
-  /* ajustes finos */
   --shadow: 0 16px 40px rgba(0,0,0,.35);
   --ring: 0 0 0 3px rgba(16,163,127,.22);
 }
 
-/* Dark inspirado em UI do ChatGPT: cinzas escuros, sem neon */
+/* Dark: vibe ChatGPT */
 html[data-theme="dark"] {
   --bg: #0f0f10;
   --panel: #171717;
@@ -29,7 +28,7 @@ html[data-theme="dark"] {
   --btnHover: #262626;
 }
 
-/* Light simples */
+/* Light */
 html[data-theme="light"] {
   --bg: #f6f7fb;
   --panel: #ffffff;
@@ -51,7 +50,6 @@ html[data-theme="light"] {
 }
 
 * { box-sizing: border-box; }
-
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -158,14 +156,9 @@ a { color: var(--accent); text-decoration: none; }
   border-color: rgba(16,163,127,.7);
   background: rgba(16,163,127,.12);
 }
-.btn.primary:hover {
-  background: rgba(16,163,127,.18);
-}
+.btn.primary:hover { background: rgba(16,163,127,.18); }
 
-.btn.icon {
-  padding: 10px 12px;
-  line-height: 1;
-}
+.btn.icon { padding: 10px 12px; line-height: 1; }
 
 /* Conteúdo */
 .main {
@@ -174,12 +167,15 @@ a { color: var(--accent); text-decoration: none; }
   width: 100%;
 }
 
-.topbar {
+/* Cabeçalho (desktop + mobile) */
+.topbar { margin-bottom: 14px; }
+
+.topbarMain {
   display:flex;
   gap: 10px;
   align-items:center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
 .leftTop {
@@ -187,6 +183,12 @@ a { color: var(--accent); text-decoration: none; }
   gap: 10px;
   align-items:center;
   flex-wrap: wrap;
+}
+
+.rightTop {
+  display:flex;
+  gap: 10px;
+  align-items:center;
 }
 
 .chip {
@@ -201,7 +203,10 @@ a { color: var(--accent); text-decoration: none; }
   font-size: 13px;
 }
 
-.searchWrap { position: relative; width: min(520px, 100%); }
+/* Search */
+#searchBar { flex: 1; min-width: 280px; }
+.searchWrap { position: relative; width: 100%; }
+
 .searchInput {
   width: 100%;
   padding: 10px 12px;
@@ -263,6 +268,14 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--panel2);
 }
 
+/* Header do módulo (sem card) */
+.moduleHeader {
+  padding: 6px 2px 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+
+/* Aulas */
 .lesson {
   padding: 12px;
   border: 1px solid var(--line);
@@ -270,6 +283,7 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--panel2);
   margin-top: 10px;
   scroll-margin-top: 110px;
+  cursor: pointer;
 }
 .lesson.active {
   border-color: rgba(16,163,127,.7);
@@ -283,17 +297,8 @@ a { color: var(--accent); text-decoration: none; }
   accent-color: var(--accent);
   cursor: pointer;
 }
-.lesson h3 {
-  margin: 0;
-  font-size: 14px;
-  cursor: pointer;
-}
-.lesson p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
+.lesson h3 { margin: 0; font-size: 14px; }
+.lesson p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 
 .links { margin-top: 8px; display:flex; flex-wrap: wrap; gap: 8px; }
 .link {
@@ -304,6 +309,7 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--bg);
   color: var(--text);
   font-size: 13px;
+  cursor: pointer;
 }
 
 .bottomActions {
@@ -330,11 +336,12 @@ body.menu-open .overlay {
   pointer-events: auto;
 }
 
-/* Mobile: sidebar vira drawer com hamburger */
+/* Mobile */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .main { padding: 18px; }
 
+  /* Sidebar vira drawer */
   .sidebar {
     position: fixed;
     top: 0;
@@ -348,16 +355,38 @@ body.menu-open .overlay {
     z-index: 100;
     border-right: 1px solid var(--line);
   }
-
   body.menu-open .sidebar { transform: translateX(0); }
 
-  /* botão menu aparece só no mobile */
+  /* Search no mobile: vira ícone e abre em linha separada */
+  #searchBar {
+    display: none;
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 10px;
+    min-width: 0;
+  }
+  body.search-open #searchBar { display: block; }
+
+  /* Botões no topo */
   .btn.icon.menu { display: inline-flex; }
-  .bottomActions { justify-content: stretch; }
+  .btn.icon.search { display: inline-flex; }
+
+  /* Next button fixo, sem cobrir conteúdo */
+  #lessons { padding-bottom: 92px; }
+  .bottomActions {
+    position: fixed;
+    left: 18px;
+    right: 18px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    justify-content: stretch;
+    z-index: 60;
+  }
   .bottomActions .btn { width: 100%; }
 }
 
-/* Desktop: esconde o botão menu */
+/* Desktop */
 @media (min-width: 901px) {
   .btn.icon.menu { display: none; }
+  .btn.icon.search { display: none; }
+  #searchBar { display: block; }
 }
