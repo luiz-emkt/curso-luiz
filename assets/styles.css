@@ -459,3 +459,34 @@ body.menu-open .overlay {
 
   .bottomActions .btn { width: 100%; }
 }
+
+/* Home: CTA sem herdar estilo de barra fixa do mobile */
+.homeActions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.homeActions .btn {
+  width: 100%;
+}
+
+/* No desktop, pode ficar menos "gigante" */
+@media (min-width: 901px) {
+  .homeActions .btn {
+    width: auto;
+    min-width: 220px;
+  }
+}
+
+/* Segurança: se ainda existir bottomActions dentro da Home, neutraliza */
+body[data-page="home"] .bottomActions {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
