@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trilha Luiz | Módulo</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+  <script>window.PAGE_BASE = "../";</script>
+</head>
+<body data-page="module" data-module="m3">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="dot"></span>
+        <div>
+          <div class="h1">Trilha Luiz</div>
+          <div class="sub">Experiência ponta a ponta com operação<br/>captação → onboarding</div>
+        </div>
+      </div>
+
+      <div class="progressBox">
+        <div class="row">
+          <div style="font-weight:800;">Progresso total</div>
+          <div class="pct" id="pctTotal">0%</div>
+        </div>
+        <div class="bar"><span id="barTotal"></span></div>
+        <div class="muted" style="margin-top:10px;">
+          Progresso salvo neste navegador.
+        </div>
+      </div>
+
+      <div class="nav" id="nav"></div>
+
+      <div class="sideActions">
+        <button class="btn" id="resetBtn">Resetar</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="leftTop">
+          <a class="chip" id="homeLink" href="../">← Home</a>
+          <span class="chip">📚 Módulo</span>
+        </div>
+
+        <div class="searchWrap" id="searchWrap">
+          <input class="searchInput" id="searchInput" placeholder="Buscar aula, tema, módulo…" />
+          <div class="searchResults hidden" id="searchResults"></div>
+        </div>
+
+        <button class="btn" id="themeBtn">☀️ Claro</button>
+      </div>
+
+      <section id="moduleView">
+        <div class="card">
+          <h1 class="title" id="modTitle">Carregando…</h1>
+          <p class="desc" id="modDesc"></p>
+
+          <div class="pills">
+            <span class="pill" id="modMetaA">-</span>
+            <span class="pill" id="modMetaB">-</span>
+          </div>
+        </div>
+
+        <div id="lessons"></div>
+
+        <div class="bottomActions">
+          <button class="btn primary" id="nextBtn">Próxima aula</button>
+        </div>
+      </section>
+
+      <section id="homeView" class="hidden"></section>
+    </main>
+  </div>
+
+  <script src="../assets/content.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>
