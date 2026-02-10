@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trilha Luiz | Experiência ponta a ponta com Operação</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#111318; --text:#e9eef7; --muted:#a7b0c0; --line:#222633; --accent:#6ee7ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:var(--text); }
+    a { color: var(--accent); text-decoration: none; }
+    .app { display:grid; grid-template-columns: 320px 1fr; min-height:100vh; }
+    .sidebar { border-right:1px solid var(--line); background:var(--panel); padding:18px; position:sticky; top:0; height:100vh; overflow:auto; }
+    .brand { display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+    .dot { width:10px; height:10px; border-radius:99px; background:var(--accent); box-shadow: 0 0 14px rgba(110,231,255,.35); }
+    .h1 { font-weight:700; font-size:14px; letter-spacing:.2px; }
+    .sub { color:var(--muted); font-size:12px; margin-top:2px; line-height:1.4; }
+    .progressBox { margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:14px; background:#0f1116; }
+    .row { display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .pct { font-variant-numeric: tabular-nums; }
+    .bar { width:100%; height:10px; background:#0b0c10; border:1px solid var(--line); border-radius:999px; margin-top:10px; overflow:hidden; }
+    .bar > span { display:block; height:100%; width:0%; background:var(--accent); }
+    .nav { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .nav button {
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#0f1116;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s;
+    }
+    .nav button:hover { border-color:#2a2f40; }
+    .nav button.active { border-color: rgba(110,231,255,.55); box-shadow: 0 0 0 3px rgba(110,231,255,.12); }
+    .nav .meta { color:var(--muted); font-size:12px; margin-top:4px; }
+    .main { padding:22px; max-width: 980px; }
+    .card {
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+    }
+    .title { font-size:20px; font-weight:750; margin:0 0 6px; }
+    .desc { color:var(--muted); margin:0 0 12px; line-height:1.5; }
+    .lesson {
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#0f1116;
+      margin-top:10px;
+    }
+    .lessonTop { display:flex; gap:10px; align-items:flex-start; }
+    input[type="checkbox"] { width:18px; height:18px; margin-top:2px; accent-color: var(--accent); cursor:pointer; }
+    .lesson h3 { margin:0; font-size:14px; }
+    .lesson p { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45; }
+    .pill { display:inline-block; padding:4px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:12px; margin-right:8px; }
+    .links { margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+    .link {
+      display:inline-block;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0b0c10;
+      color:var(--text);
+      font-size:13px;
+    }
+    .footerRow { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .btn {
+      border:1px solid var(--line);
+      background:#0b0c10;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+    .btn:hover { border-color:#2a2f40; }
+    .muted { color: var(--muted); font-size:12px; line-height:1.4; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position:relative; height:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="dot"></span>
+        <div>
+          <div class="h1">Trilha Luiz</div>
+          <div class="sub">Experiência ponta a ponta com operação<br/>captação → onboarding</div>
+        </div>
+      </div>
+
+      <div class="progressBox">
+        <div class="row">
+          <div style="font-weight:650;">Progresso total</div>
+          <div class="pct" id="pctTotal">0%</div>
+        </div>
+        <div class="bar"><span id="barTotal"></span></div>
+        <div class="muted" style="margin-top:10px;">
+          Marca as aulas como concluídas. O progresso fica salvo neste navegador.
+        </div>
+      </div>
+
+      <div class="nav" id="nav"></div>
+
+      <div class="footerRow">
+        <button class="btn" id="resetBtn">Resetar progresso</button>
+        <button class="btn" id="exportBtn">Exportar JSON</button>
+      </div>
+      <div class="muted" style="margin-top:10px;">
+        Dica: dá pra colar o JSON exportado aqui no código depois, se quiser versionar seu progresso.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="card">
+        <h1 class="title" id="modTitle">Carregando…</h1>
+        <p class="desc" id="modDesc"></p>
+        <div class="row" style="margin-top:10px;">
+          <div class="pill" id="modMeta"></div>
+          <div class="pill" id="modProgress"></div>
+        </div>
+      </div>
+
+      <div id="lessons"></div>
+    </main>
+  </div>
+
+  <script>
+    // Conteúdo (edite à vontade)
+    const MODULES = [
+      {
+        id: "m1",
+        title: "Semanas 1–2 • Diagnóstico que vira decisão",
+        desc: "Aprender a formular problema, hipótese e critério de sucesso. Parar de discutir opinião e começar a decidir com método.",
+        lessons: [
+          {
+            id: "m1l1",
+            title: "Problem statement (prático)",
+            note: "Molde para você escrever a Ficha de Problema em 1 parágrafo.",
+            links: [
+              { label: "NN/g • Problem Statements", url: "https://www.nngroup.com/articles/problem-statements/" },
+              { label: "CareerFoundry • Problem Statement", url: "https://careerfoundry.com/en/blog/ux-design/problem-statement-ux/" }
+            ]
+          },
+          {
+            id: "m1l2",
+            title: "Priorização (impacto x esforço x risco)",
+            note: "Decidir sem virar refém do cliente ou do time. Uma régua simples e repetível.",
+            links: [
+              { label: "Guia rápido: priorização (busca)", url: "https://www.google.com/search?q=prioriza%C3%A7%C3%A3o+impacto+esfor%C3%A7o+risco+ux" }
+            ]
+          },
+          {
+            id: "m1l3",
+            title: "Entregável: Ficha de Problema (1 página)",
+            note: "Problema, causa provável, hipótese, mudança, métrica e janela de avaliação.",
+            links: []
+          }
+        ]
+      },
+      {
+        id: "m2",
+        title: "Semanas 3–4 • Jornada real + backstage (blueprint)",
+        desc: "Mapear o que acontece de verdade. Handoffs, filas, exceções e responsabilidades.",
+        lessons: [
+          {
+            id: "m2l1",
+            title: "Service Blueprint (modelo e lógica)",
+            note: "Use blueprint leve: frontstage + backstage + evidências + responsáveis.",
+            links: [
+              { label: "Miro • Service Blueprint", url: "https://miro.com/pt/modelos/service-blueprint/" },
+              { label: "Blip • Service Blueprint", url: "https://www.blip.ai/blog/design/service-blueprint-como-ferramenta-para-potencializar-jornadas-de-servico/" }
+            ]
+          },
+          {
+            id: "m2l2",
+            title: "Mapa da jornada do usuário (sem romantizar)",
+            note: "Etapas, objetivos, dúvidas, fricções e momentos críticos.",
+            links: [
+              { label: "MJV • Jornada do usuário", url: "https://www.mjvinnovation.com/pt-br/blog/como-montar-o-mapa-da-jornada-do-usuario/" }
+            ]
+          },
+          {
+            id: "m2l3",
+            title: "Entregável: blueprint leve da jornada captação→onboarding",
+            note: "Inclua exceções: sem resposta, sem fit, duplicado, urgência, falha de pagamento, etc.",
+            links: []
+          }
+        ]
+      },
+      {
+        id: "m3",
+        title: "Semanas 5–6 • Métrica aplicada e instrumentação mínima",
+        desc: "Escolher 2–4 métricas por etapa e provar impacto sem dashboard inútil.",
+        lessons: [
+          {
+            id: "m3l1",
+            title: "HEART Framework (visão de métricas de experiência)",
+            note: "Traduza para o seu mundo: tempo, erro, avanço, ativação, satisfação.",
+            links: [
+              { label: "HEART Framework (site)", url: "https://www.heartframework.com/" },
+              { label: "UXDesign BR • HEART", url: "https://brasil.uxdesign.cc/como-utilizar-o-framework-heart-para-melhorar-suas-m%C3%A9tricas-1bcee0d080ec" }
+            ]
+          },
+          {
+            id: "m3l2",
+            title: "AARRR (organizar a jornada em etapas)",
+            note: "Bom para amarrar aquisição→ativação→retenção do ponto de vista operacional.",
+            links: [
+              { label: "G4 • Funil Pirata (AARRR)", url: "https://g4educacao.com/blog/funil-pirata-growth" }
+            ]
+          },
+          {
+            id: "m3l3",
+            title: "Entregável: Placar do Funil (1 página)",
+            note: "Métrica, fórmula, fonte, frequência, dono, e como interpretar.",
+            links: []
+          }
+        ]
+      },
+      {
+        id: "m4",
+        title: "Semanas 7–8 • UI utilitária + heurísticas (auditoria)",
+        desc: "Clareza, consistência e prevenção de erro. Heurísticas como justificativa, não como decoreba.",
+        lessons: [
+          {
+            id: "m4l1",
+            title: "Heurísticas de Nielsen (resumo em PT-BR)",
+            note: "Use como checklist para achar fricção e priorizar correções.",
+            links: [
+              { label: "UDS • Heurísticas de Nielsen", url: "https://uds.com.br/blog/heuristicas-nielsen-guia-para-melhorar-usabilidade-interfaces/" },
+              { label: "Alura • Heurísticas de Nielsen", url: "https://www.alura.com.br/artigos/10-heuristicas-de-nielsen-uma-formula-pra-evitar-erros-basicos-de-usabilidade" }
+            ]
+          },
+          {
+            id: "m4l2",
+            title: "Hierarquia e tipografia (pra antes do Figma)",
+            note: "Você quer páginas mais claras e ‘caras’ com menos elementos.",
+            links: [
+              { label: "Medium • Hierarquia de fontes", url: "https://henriquefilho.medium.com/hierarquia-de-fontes-um-guia-b%C3%A1sico-para-criar-uma-interface-antes-de-abrir-o-figma-2c017c7df879" },
+              { label: "UXDesign BR • Escala tipográfica", url: "https://brasil.uxdesign.cc/escala-tipogr%C3%A1fica-na-pr%C3%A1tica-1eb81cdee96f" }
+            ]
+          },
+          {
+            id: "m4l3",
+            title: "Acessibilidade aplicada (consulta)",
+            note: "Contraste, foco, tamanho, navegação por teclado. O básico que eleva qualidade.",
+            links: [
+              { label: "W3C • WCAG 2.2 PT-BR", url: "https://www.w3c.br/traducoes/wcag/wcag22-pt-BR/" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "m5",
+        title: "Semanas 9–10 • Pesquisa leve + teste de usabilidade",
+        desc: "Evidência rápida para decidir. 5 pessoas, roteiro curto, síntese em 1 página.",
+        lessons: [
+          {
+            id: "m5l1",
+            title: "Roteiro de teste qualitativo (PT-BR)",
+            note: "Como conduzir sem virar entrevista longa e sem enviesar.",
+            links: [
+              { label: "Ladies That UX BR • Roteiro", url: "https://medium.com/ladies-that-ux-br/um-roteiro-para-testes-de-usabilidade-qualitativos-611d41c93434" }
+            ]
+          },
+          {
+            id: "m5l2",
+            title: "Checklist de teste (referência rápida)",
+            note: "Bom pra você ter um passo-a-passo operacional.",
+            links: [
+              { label: "Hotjar • Usabilidade (PT-BR)", url: "https://www.hotjar.com/pt-BR/teste-de-usabilidade/checklist-exemplos-de-testes/" }
+            ]
+          },
+          {
+            id: "m5l3",
+            title: "Entregável: síntese 1 página (padrões → decisão → risco)",
+            note: "Sem relatório longo. Só o que muda o caminho.",
+            links: []
+          }
+        ]
+      },
+      {
+        id: "m6",
+        title: "Semanas 11–12 • Onboarding e ativação (primeiros 7 dias)",
+        desc: "Marcos, mensagens, gatilhos e sinais de risco para reduzir suporte e aumentar ativação.",
+        lessons: [
+          {
+            id: "m6l1",
+            title: "Onboarding (visão prática)",
+            note: "Como organizar primeiros passos e expectativa do cliente.",
+            links: [
+              { label: "RD Station • Onboarding de clientes", url: "https://www.rdstation.com/blog/marketing/onboarding-de-clientes/" }
+            ]
+          },
+          {
+            id: "m6l2",
+            title: "Boas práticas de onboarding (referência)",
+            note: "Pegue só o que for aplicável ao seu contexto.",
+            links: [
+              { label: "UserGuiding • Onboarding", url: "https://userguiding.com/pt-br/blog/melhores-praticas-de-user-onboarding" }
+            ]
+          },
+          {
+            id: "m6l3",
+            title: "Entregável: Onboarding 7 dias (marcos + mensagens + métricas)",
+            note: "Sem firula. O que a pessoa precisa fazer e como você acompanha.",
+            links: []
+          }
+        ]
+      },
+      {
+        id: "m7",
+        title: "Bônus • Figma essencial (só o necessário)",
+        desc: "Prototipar e alinhar rápido. Componentes, estilos, auto layout e protótipo simples.",
+        lessons: [
+          {
+            id: "m7l1",
+            title: "Auto Layout (guia oficial PT-BR)",
+            note: "O que mais destrava seu ganho de velocidade e consistência.",
+            links: [
+              { label: "Figma Help • Auto Layout", url: "https://help.figma.com/hc/pt-br/articles/360040451373-Guia-do-layout-autom%C3%A1tico" }
+            ]
+          },
+          {
+            id: "m7l2",
+            title: "Componentes e estilos (conceito + uso)",
+            note: "Pra você parar de copiar e colar e começar a padronizar.",
+            links: [
+              { label: "Figma Help (busca)", url: "https://www.google.com/search?q=figma+componentes+estilos+guia" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const STORAGE_KEY = "trilha_luiz_checks_v1";
+    let state = loadState();
+    let currentModuleId = MODULES[0].id;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch { return {}; }
+    }
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderNav();
+      renderModule(currentModuleId);
+      renderTotalProgress();
+    }
+    function setChecked(lessonId, checked) {
+      state[lessonId] = !!checked;
+      saveState();
+    }
+
+    function calcModuleProgress(mod) {
+      const total = mod.lessons.length;
+      const done = mod.lessons.filter(l => state[l.id]).length;
+      return { done, total, pct: total ? Math.round((done/total)*100) : 0 };
+    }
+    function calcTotalProgress() {
+      const allLessons = MODULES.flatMap(m => m.lessons.map(l => l.id));
+      const total = allLessons.length;
+      const done = allLessons.filter(id => state[id]).length;
+      return { done, total, pct: total ? Math.round((done/total)*100) : 0 };
+    }
+
+    function renderNav() {
+      const nav = document.getElementById("nav");
+      nav.innerHTML = "";
+      MODULES.forEach(mod => {
+        const prog = calcModuleProgress(mod);
+        const btn = document.createElement("button");
+        btn.className = (mod.id === currentModuleId) ? "active" : "";
+        btn.onclick = () => { currentModuleId = mod.id; renderNav(); renderModule(mod.id); };
+        btn.innerHTML = `
+          <div style="font-weight:700; font-size:13px;">${escapeHtml(mod.title)}</div>
+          <div class="meta">${prog.done}/${prog.total} concluídas • ${prog.pct}%</div>
+        `;
+        nav.appendChild(btn);
+      });
+    }
+
+    function renderModule(moduleId) {
+      const mod = MODULES.find(m => m.id === moduleId);
+      if (!mod) return;
+      const prog = calcModuleProgress(mod);
+
+      document.getElementById("modTitle").textContent = mod.title;
+      document.getElementById("modDesc").textContent = mod.desc;
+      document.getElementById("modMeta").textContent = `${prog.done}/${prog.total} aulas concluídas`;
+      document.getElementById("modProgress").textContent = `${prog.pct}% do módulo`;
+
+      const lessons = document.getElementById("lessons");
+      lessons.innerHTML = "";
+
+      mod.lessons.forEach(lesson => {
+        const wrap = document.createElement("div");
+        wrap.className = "lesson";
+        const checked = !!state[lesson.id];
+
+        const linksHtml = (lesson.links && lesson.links.length)
+          ? `<div class="links">${
+              lesson.links.map(l => `<a class="link" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`).join("")
+            }</div>`
+          : `<div class="muted" style="margin-top:8px;">Sem link aqui: é entrega/prática.</div>`;
+
+        wrap.innerHTML = `
+          <div class="lessonTop">
+            <input type="checkbox" ${checked ? "checked" : ""} aria-label="Concluir aula" />
+            <div style="flex:1;">
+              <h3>${escapeHtml(lesson.title)}</h3>
+              <p>${escapeHtml(lesson.note || "")}</p>
+              ${linksHtml}
+            </div>
+          </div>
+        `;
+
+        wrap.querySelector("input").addEventListener("change", (e) => {
+          setChecked(lesson.id, e.target.checked);
+        });
+
+        lessons.appendChild(wrap);
+      });
+    }
+
+    function renderTotalProgress() {
+      const p = calcTotalProgress();
+      document.getElementById("pctTotal").textContent = `${p.pct}%`;
+      document.getElementById("barTotal").style.width = `${p.pct}%`;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[s]));
+    }
+
+    document.getElementById("resetBtn").onclick = () => {
+      if (!confirm("Resetar todo o progresso desta trilha neste navegador?")) return;
+      state = {};
+      saveState();
+    };
+
+    document.getElementById("exportBtn").onclick = () => {
+      const data = { exported_at: new Date().toISOString(), state };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "progresso_trilha_luiz.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Init
+    renderNav();
+    renderModule(currentModuleId);
+    renderTotalProgress();
+  </script>
+</body>
+</html>
