@@ -2,10 +2,9 @@
   const MODULES = window.TRILHA_MODULES || [];
   if (!MODULES.length) return;
 
-  const STATE_KEY = "trilha_luiz_state_v6";
-  const THEME_KEY = "trilha_luiz_theme_v1";
+  const STATE_KEY = "trilha_luiz_state_v7";
+  const THEME_KEY = "trilha_luiz_theme_v2";
   const BASE = window.PAGE_BASE || "./";
-
   const $ = (id) => document.getElementById(id);
 
   function show(id) { const el = $(id); if (el) el.classList.remove("hidden"); }
@@ -143,14 +142,12 @@
   function renderLessonBody(lesson) {
     let html = "";
 
-    if (lesson.sections && Array.isArray(lesson.sections) && lesson.sections.length) {
-      lesson.sections.forEach((s) => {
+    const sections = lesson.sections && Array.isArray(lesson.sections) ? lesson.sections : [];
+    if (sections.length) {
+      sections.forEach((s) => {
         if (s.title) html += `<h4>${escapeHtml(s.title)}</h4>`;
-
         if (s.text) html += `<p>${escapeHtml(s.text)}</p>`;
-
         if (s.quote) html += `<blockquote>${escapeHtml(s.quote)}</blockquote>`;
-
         if (s.bullets && Array.isArray(s.bullets) && s.bullets.length) {
           html += `<ul>${s.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>`;
         }
@@ -214,15 +211,13 @@
         </div>
       `;
 
-      // Checkbox
       const cb = wrap.querySelector("input");
       if (cb) cb.addEventListener("change", (e) => setChecked(lesson.id, e.target.checked));
 
-      // Card inteiro clicável (exceto links/checkbox)
       wrap.addEventListener("click", (e) => {
         if (e.target.closest("a")) return;
         if (e.target.closest("input")) return;
-        if (wrap.classList.contains("active")) return; // evita scroll chato ao tocar dentro do aberto
+        if (wrap.classList.contains("active")) return;
         setActiveLesson(lesson.id);
       });
 
@@ -237,11 +232,14 @@
     if (nextBtn) nextBtn.onclick = () => goNextLesson();
 
     const hash = (location.hash || "").replace("#", "");
-    if (hash && getLesson(moduleId, hash)) {
+
+    // Se NÃO tiver hash, mantém topo e só abre a primeira pendente SEM atualizar hash (pra não ancorar no iOS)
+    if (!hash) {
+      if (!opts.keepScroll) window.scrollTo({ top: 0 });
+      const firstPending = mod.lessons.find((l) => !state[l.id]) || mod.lessons[0];
+      if (firstPending) setActiveLesson(firstPending.id, { scroll: false, silentHash: true });
+    } else if (getLesson(moduleId, hash)) {
       setActiveLesson(hash, { scroll: true, silentHash: true });
-    } else {
-      const firstPending = mod.lessons.find((l) => !state[l.id]);
-      if (firstPending) setActiveLesson(firstPending.id, { scroll: false, silentHash: false });
     }
 
     renderNav();
@@ -323,9 +321,7 @@
     return m ? m.lessons.find((l) => l.id === lessonId) : null;
   }
 
-  // Search
   const searchIndex = buildSearchIndex();
-
   function buildSearchIndex() {
     const items = [];
     MODULES.forEach((mod) => {
@@ -408,6 +404,13 @@
       results.classList.remove("hidden");
     });
 
+    results.addEventListener("click", (e) => {
+      const a = e.target.closest("a[data-search-link]");
+      if (!a) return;
+      closeSearch();
+      hideResults();
+    });
+
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") { hideResults(); closeSearch(); }
       if (e.key === "Enter") {
@@ -416,24 +419,11 @@
       }
     });
 
-    results.addEventListener("click", (e) => {
-      const a = e.target.closest("a[data-search-link]");
-      if (!a) return;
-      closeSearch();
-      hideResults();
-    });
-
     document.addEventListener("click", (e) => {
       if (!wrap.contains(e.target)) hideResults();
-      if (isMobile() && document.body.classList.contains("search-open")) {
-        const sb = $("searchBar");
-        const btn = $("searchBtn");
-        if (sb && !sb.contains(e.target) && btn && !btn.contains(e.target)) closeSearch();
-      }
     });
   }
 
-  // Theme
   function initTheme() {
     const saved = localStorage.getItem(THEME_KEY);
     const theme = saved === "light" || saved === "dark" ? saved : "dark";
@@ -447,10 +437,11 @@
     localStorage.setItem(THEME_KEY, next);
   }
 
+  // Só ícone
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     const themeBtn = $("themeBtn");
-    if (themeBtn) themeBtn.textContent = theme === "dark" ? "☀️ Claro" : "🌙 Escuro";
+    if (themeBtn) themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
   }
 
   function escapeHtml(str) {
