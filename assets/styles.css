@@ -435,3 +435,27 @@ body.menu-open .overlay {
   .lessonBody { display: none; }
   .lesson.active .lessonBody { display: block; }
 }
+
+/* Colapsar conteúdo por padrão (desktop + mobile): só a aula ativa abre */
+.lessonBody { display: none; }
+.lesson.active .lessonBody { display: block; }
+
+/* Melhorar barra do botão no mobile (sem transparência, com padding e sem sobrepor) */
+@media (max-width: 900px) {
+  #lessons { padding-bottom: 150px; }
+
+  .bottomActions {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    z-index: 60;
+  }
+
+  .bottomActions .btn { width: 100%; }
+}
