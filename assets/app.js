@@ -2,9 +2,9 @@
   const MODULES = window.TRILHA_MODULES || [];
   if (!MODULES.length) return;
 
-  const STATE_KEY = "trilha_luiz_state_v4";
+  const STATE_KEY = "trilha_luiz_state_v5";
   const THEME_KEY = "trilha_luiz_theme_v1";
-  const BASE = window.PAGE_BASE || "./"; // home: "./" | module pages: "../"
+  const BASE = window.PAGE_BASE || "./";
 
   const $ = (id) => document.getElementById(id);
 
@@ -25,6 +25,32 @@
   const page = document.body?.dataset?.page;
   if (page === "home") renderHome();
   if (page === "module") renderModule(activeModuleId);
+
+  function isMobile() {
+    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  }
+
+  function openMenu() { document.body.classList.add("menu-open"); }
+  function closeMenu() { document.body.classList.remove("menu-open"); }
+
+  function openSearch() {
+    document.body.classList.add("search-open");
+    const btn = $("searchBtn");
+    if (btn) btn.textContent = "✕";
+    const input = $("searchInput");
+    if (input) setTimeout(() => input.focus(), 0);
+  }
+  function closeSearch() {
+    document.body.classList.remove("search-open");
+    const btn = $("searchBtn");
+    if (btn) btn.textContent = "🔎";
+    const results = $("searchResults");
+    if (results) results.classList.add("hidden");
+  }
+  function toggleSearch() {
+    if (!isMobile()) return;
+    document.body.classList.contains("search-open") ? closeSearch() : openSearch();
+  }
 
   function loadState() {
     try { return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
@@ -66,11 +92,6 @@
     if (bar) bar.style.width = `${p.pct}%`;
   }
 
-  function openMenu() { document.body.classList.add("menu-open"); }
-  function closeMenu() { document.body.classList.remove("menu-open"); }
-  function toggleMenu() { document.body.classList.toggle("menu-open"); }
-  function isMobile() { return window.matchMedia && window.matchMedia("(max-width: 900px)").matches; }
-
   function renderNav() {
     const nav = $("nav");
     if (!nav) return;
@@ -101,9 +122,6 @@
     show("homeView");
     hide("moduleView");
 
-    show("homeChip");
-    hide("moduleChip");
-
     const continueBtn = $("continueBtn");
     if (continueBtn) {
       continueBtn.onclick = () => {
@@ -127,9 +145,6 @@
 
     hide("homeView");
     show("moduleView");
-
-    hide("homeChip");
-    show("moduleChip");
 
     const mod = getModule(moduleId);
     if (!mod) return;
@@ -170,18 +185,23 @@
         <div class="lessonTop">
           <input type="checkbox" ${checked ? "checked" : ""} aria-label="Concluir aula" />
           <div style="flex:1;">
-            <h3 data-lesson-title="1">${escapeHtml(lesson.title)}</h3>
+            <h3>${escapeHtml(lesson.title)}</h3>
             <p>${escapeHtml(lesson.note || "")}</p>
             ${linksHtml}
           </div>
         </div>
       `;
 
+      // Checkbox
       const cb = wrap.querySelector("input");
       if (cb) cb.addEventListener("change", (e) => setChecked(lesson.id, e.target.checked));
 
-      const title = wrap.querySelector("[data-lesson-title]");
-      if (title) title.addEventListener("click", () => setActiveLesson(lesson.id));
+      // Card inteiro clicável (exceto links/checkbox)
+      wrap.addEventListener("click", (e) => {
+        if (e.target.closest("a")) return;
+        if (e.target.closest("input")) return;
+        setActiveLesson(lesson.id);
+      });
 
       lessonsWrap.appendChild(wrap);
     });
@@ -267,11 +287,6 @@
     }
 
     const currentIndex = MODULES.findIndex((m) => m.id === moduleId);
-    for (let j = currentIndex + 1; j < MODULES.length; j++) {
-      const m = MODULES[j];
-      if (m.lessons.some((l) => !state[l.id])) return { type: "module", moduleId: m.id };
-    }
-
     if (currentIndex >= 0 && currentIndex + 1 < MODULES.length) {
       return { type: "module", moduleId: MODULES[currentIndex + 1].id };
     }
@@ -319,17 +334,27 @@
     }
 
     const menuBtn = $("menuBtn");
-    if (menuBtn) menuBtn.addEventListener("click", () => toggleMenu());
+    if (menuBtn) menuBtn.addEventListener("click", () => {
+      closeSearch();
+      document.body.classList.contains("menu-open") ? closeMenu() : openMenu();
+    });
 
     const overlay = $("overlay");
     if (overlay) overlay.addEventListener("click", () => closeMenu());
 
+    const searchBtn = $("searchBtn");
+    if (searchBtn) searchBtn.addEventListener("click", () => toggleSearch());
+
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeMenu();
+      if (e.key === "Escape") {
+        closeMenu();
+        closeSearch();
+      }
     });
 
     window.addEventListener("resize", () => {
       if (!isMobile()) closeMenu();
+      if (!isMobile()) closeSearch();
     });
 
     const input = $("searchInput");
@@ -347,7 +372,7 @@
 
       results.innerHTML = matches.length
         ? matches.map((m) => `
-            <a href="${BASE}${m.moduleId}/#${m.lessonId}">
+            <a href="${BASE}${m.moduleId}/#${m.lessonId}" data-search-link="1">
               <div style="font-weight:800; font-size:13px;">${escapeHtml(m.lessonTitle)}</div>
               <div class="small">${escapeHtml(m.moduleTitle)}</div>
             </a>
@@ -358,15 +383,29 @@
     });
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") hideResults();
+      if (e.key === "Escape") { hideResults(); closeSearch(); }
       if (e.key === "Enter") {
-        const first = results.querySelector("a");
+        const first = results.querySelector("a[data-search-link]");
         if (first) window.location.href = first.getAttribute("href");
       }
     });
 
+    results.addEventListener("click", (e) => {
+      const a = e.target.closest("a[data-search-link]");
+      if (!a) return;
+      closeSearch();
+      hideResults();
+    });
+
     document.addEventListener("click", (e) => {
+      // Fecha dropdown de resultados se clicar fora
       if (!wrap.contains(e.target)) hideResults();
+      // No mobile, se search estiver aberto e clicar fora do search (e não no botão lupa), fecha
+      if (isMobile() && document.body.classList.contains("search-open")) {
+        const sb = $("searchBar");
+        const btn = $("searchBtn");
+        if (sb && !sb.contains(e.target) && btn && !btn.contains(e.target)) closeSearch();
+      }
     });
   }
 
